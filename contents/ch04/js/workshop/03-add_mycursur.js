@@ -1,0 +1,74 @@
+const r = 20
+let angle;
+let x, y;
+let spd = 10;
+let score = 0;
+let dx = 1;
+let dy = 1;
+
+function setup() {
+  angleMode(DEGREES);
+  createCanvas(400, 400);
+  x = random(r, width - r);
+  y = random(r, height - r);
+  angle = random(0, 360);
+  console.log('Angle: ', angle);
+}
+
+function draw() {
+  background(220);
+  txtSpeed();
+  txtScore();
+  myBall(x, y);
+  myCursor(x, y);
+  x += spd * sin(angle) * dx;
+  y += spd * cos(angle) * dy;
+  if (x > width - r || x < r) {
+    dx = dx * -1;
+  }
+  if (y > height - r || y < r) {
+    dy = dy * -1;
+  }
+}
+
+function keyPressed() {
+  if (key === '+' && spd < 20) {
+    spd += 1;
+  }
+  if (key === '-' && spd > 0) {
+    spd -= 1;
+  }
+}
+
+/**
+ * Add Cursur change on mouseover
+ */
+function myCursor(x, y) {
+  const dY = mouseY - y;
+  const dX = mouseX - x;
+  const d = sqrt(dX * dX + dY * dY)
+  cursor(ARROW);
+  if (d <= r) {
+    cursor(HAND);
+  }
+}
+
+function txtSpeed() {
+  const margin = 10;
+  const fontSize = 20;
+  textSize(fontSize);
+  text('Speed: ' + spd, margin, fontSize + margin);
+}
+
+function txtScore() {
+  const margin = 10;
+  const fontSize = 20;
+  textSize(fontSize);
+  text('Score: ' + score, width - margin * 10, fontSize + margin);
+}
+
+function myBall(x, y) {
+  const s = r * 2;
+  fill('navy');
+  ellipse(x, y, s, s);
+}
