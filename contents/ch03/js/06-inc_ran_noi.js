@@ -22,6 +22,11 @@ function drawGraph() {
   }
 }
 
+for(let i = 0; i < width; i++) {
+  const r = random(0, 400);
+  point(i, r);
+}
+
 function drawRandom() {
   for(let x = 0; x < cw; x++) {
     const r = random(0, ch);
