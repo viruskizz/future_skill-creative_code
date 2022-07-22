@@ -2,6 +2,7 @@ const game = {
   bit: 32,
   gx: 10,
   gy: 20,
+  // 2. add new attributes
   timer: undefined,
   time: 0,
   spd: 5,
@@ -9,9 +10,9 @@ const game = {
   isOver: false,
   sound: undefined,
 }
-
 const stars = [];
 
+// 3. Add meteor variable
 const meteor = {
   chance: 20,
   file: 'assets/meteorite.png',
@@ -19,80 +20,34 @@ const meteor = {
   objs: [],
 }
 
-const ship = {
-  file: 'assets/spaceship.png',
-  img: undefined,
-  x: undefined,
-  y: undefined,
-}
-
 function preload() {
   meteor.img = loadImage(meteor.file);
-  ship.img = loadImage(ship.file);
-  ship.x = game.gx * game.bit / 2;
-  ship.y = game.gy * game.bit - game.bit;
 }
 
 function setup() {
   const {bit, gx, gy} = game;
   createCanvas(bit * gx, bit * gy);
-  initMeteors();
   initStars();
   gameSound();
   gameButton();
+  initMeteors();
 }
 
 function draw() {
   background('black');
   renderStar();
   renderMeteors();
-  renderShip();
-  crashShip();
+  // Text alway top
   renderTime();
   if (game.isOver) {
     renderBanner('GAME OVER');
+  } else if (!game.isPlay) {
+    renderBanner('PAUSE');
   }
 }
 
 /**
- * Game
- */
-function gameStart() {
-  game.isPlay = true;
-  game.sound.play();
-  game.timer = setInterval(function() {
-    game.time += 1;
-  }, 1000);
-}
-
-function gamePause() {
-  game.isPlay = false;
-  game.sound.pause();
-}
-
-function gameOver() {
-  game.isPlay = false;
-  game.isOver = true;
-  game.sound.pause();
-  clearInterval(game.timer);
-}
-
-function gameSound() {
-  game.sound = createAudio('assets/bgm.m4a');
-  game.sound.volume(0.1);
-  game.sound.autoplay(false);
-  game.sound.stop();
-}
-
-function gameButton() {
-  startBtn = createButton('START');
-  startBtn.mousePressed(gameStart);
-  pauseBtn = createButton('PAUSE');
-  pauseBtn.mousePressed(gamePause);
-}
-
-/**
- * Text
+ * 1. Text
  */
 function renderTime() {
   textSize(20);
@@ -112,49 +67,7 @@ function renderBanner(txt) {
 }
 
 /**
- * Ship
- */
-function renderShip() {
-  const mv = 2;
-  const {img, x, y} = ship;
-  image(img, x, y, game.bit, game.bit);
-  if (!game.isPlay) {
-    return;
-  }
-  if (keyIsPressed && key === 'ArrowRight') {
-    ship.x += mv;
-  }
-  if (keyIsPressed && key === 'ArrowLeft') {
-    ship.x -= mv;
-  }
-  if (keyIsPressed && key === 'ArrowDown') {
-    ship.y += mv;
-  }
-  if (keyIsPressed && key === 'ArrowUp') {
-    ship.y -= mv;
-  }
-}
-
-function crashShip() {
-  const {bit} = game;
-  const {objs} = meteor;
-  const offset = round(game.bit * 0.3);
-  for (let i = 0; i < objs.length; i += 1) {
-    const obj = objs[i];
-    // ship is under of obj  ||  ship is upper of obj
-    if (ship.y > obj.y + bit - offset || ship.y + bit < obj.y + offset) {
-      continue;
-    }
-    // ship is left of obj  ||  ship is right of obj
-    if (ship.x + bit < obj.x + offset || ship.x > obj.x + bit - offset) {
-      continue;
-    }
-    gameOver();
-  }
-}
-
-/**
- * Star
+ * 1. Star
  */
 function initStars() {
   const {gx, gy, bit} = game;
@@ -177,8 +90,60 @@ function renderStar() {
 }
 
 /**
- * Meteors
+ * 2. Game
  */
+function gameStart() {
+  if (game.isPlay) {
+    return;
+  }
+  game.isPlay = true;
+  game.sound.play();
+  game.timer = setInterval(function() {
+    game.time += 1;
+  }, 1000);
+}
+
+function gamePause() {
+  if (!game.isPlay) {
+    return;
+  }
+  game.isPlay = false;
+  game.sound.pause();
+  clearInterval(game.timer);
+}
+
+function gameOver() {
+  if (!game.isPlay) {
+    return;
+  }
+  gamePause();
+  game.isOver = true;
+}
+
+function gameSound() {
+  game.sound = createAudio('assets/bgm.m4a');
+  game.sound.volume(0.1);
+  game.sound.autoplay(false);
+  game.sound.stop();
+}
+
+function gameButton() {
+  startBtn = createButton('START');
+  startBtn.mousePressed(gameStart);
+  pauseBtn = createButton('PAUSE');
+  pauseBtn.mousePressed(gamePause);
+}
+
+/**
+ * 3. Meteors
+ */
+function initMeteors() {
+  const maxY = ceil(game.gy / 2) * game.bit;
+  for (let y = 0; y < maxY; y += game.bit * 2) {
+    createMeteorsRow(y);
+  }
+}
+
 function renderMeteors() {
   const { bit } = game;
   const { objs, img } = meteor;
@@ -218,19 +183,12 @@ function clearMeteor() {
 function createMeteorsRow(y) {
   for (let x = 0; x < width; x += game.bit) {
     const r = random(0, 100);
-    if (r < 100 -meteor.chance) {
+    if (r < 100 - meteor.chance) {
       continue;
     }
     meteor.objs.push({
       x: x,
       y: y,
     });
-  }
-}
-
-function initMeteors() {
-  const maxY = ceil(game.gy / 2) * game.bit;
-  for (let y = 0; y < maxY; y += game.bit * 2) {
-    createMeteorsRow(y);
   }
 }
